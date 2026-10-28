@@ -1,1 +1,407 @@
 # crisafa27.github.io
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EstuaRio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{
+  --bg:#eef3f1; --surface:#ffffff; --ink:#10303a; --muted:#53707a; --line:#d0dcdd; --accent:#0e5a6c; --on-accent:#ffffff; --danger:#a3281f;
+  --dulce:#1d5fb8; --salobre:#f5c518; --marina:#1b7a4b; --tx-dulce:#ffffff; --tx-salobre:#231a00; --tx-marina:#ffffff;
+  --font:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c1d23; --surface:#142b33; --ink:#e6f1f2; --muted:#93b0b8; --line:#2a444d; --accent:#6cc4d8; --on-accent:#08242b; --danger:#ff9a8f;
+    --dulce:#7db4ff; --salobre:#ffd84d; --marina:#5fd08f; --tx-dulce:#04203f; --tx-salobre:#231a00; --tx-marina:#052a17;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0c1d23; --surface:#142b33; --ink:#e6f1f2; --muted:#93b0b8; --line:#2a444d; --accent:#6cc4d8; --on-accent:#08242b; --danger:#ff9a8f;
+  --dulce:#7db4ff; --salobre:#ffd84d; --marina:#5fd08f; --tx-dulce:#04203f; --tx-salobre:#231a00; --tx-marina:#052a17;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:18px;line-height:1.45;color-scheme:light dark}
+.wrap{max-width:1180px;margin:0 auto;padding:20px clamp(14px,3vw,32px) 40px}
+h1{font-size:clamp(1.6rem,3.2vw,2.3rem);line-height:1.15;margin:0 0 4px}
+h2{font-size:1.2rem;margin:0 0 14px}
+.sub{margin:0 0 18px;color:var(--muted);max-width:60ch}
+
+/* Resumen */
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px;border-left:8px solid var(--line)}
+.tile .n{font-size:2.3rem;font-weight:700;line-height:1}
+.tile .l{color:var(--muted);margin-top:4px}
+.tile.dulce{border-left-color:var(--dulce)} .tile.salobre{border-left-color:var(--salobre)} .tile.marina{border-left-color:var(--marina)}
+
+/* Gráfico */
+.chartcard{margin-bottom:18px}
+.chartbox{position:relative;width:100%;min-width:0;height:clamp(260px,44vh,440px)}
+.chartbox canvas{display:block}
+@media (orientation:landscape) and (max-height:600px){.chartbox{height:clamp(220px,54vh,360px)}}
+
+/* Layout principal */
+.main{display:grid;grid-template-columns:1fr;gap:18px;align-items:start}
+@media (orientation:landscape) and (min-width:760px){
+  .main{grid-template-columns:minmax(290px,350px) 1fr}
+  .formcard{position:sticky;top:12px}
+}
+@media (orientation:portrait),(max-width:759px){
+  .summary{grid-template-columns:repeat(2,1fr)}
+}
+.main>*{min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+
+/* Formulario */
+label{display:block;font-weight:700;margin:0 0 4px}
+.field{margin-bottom:14px}
+input[type=text]{width:100%;min-height:52px;padding:10px 14px;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:10px}
+input[type=text]:focus{outline:3px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hint{color:var(--muted);font-size:.88rem;margin-top:3px}
+.live{min-height:1.5em;margin:0 0 10px;font-weight:700}
+.live.err{color:var(--danger)}
+.live.ok{color:var(--accent)}
+.live .chip{margin-left:6px}
+button{font:inherit;min-height:52px;padding:10px 20px;border-radius:10px;border:2px solid var(--accent);background:transparent;color:var(--accent);font-weight:700;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--on-accent)}
+button.danger{border-color:var(--danger);color:var(--danger)}
+button.danger.solid{background:var(--danger);color:var(--surface)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.actions .primary{flex:1 1 160px}
+
+/* Lista */
+.listhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.listhead h2{margin:0}
+.tools{display:flex;gap:10px;flex-wrap:wrap}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl{width:100%;border-collapse:collapse;min-width:560px}
+.tbl th{text-align:left;font-size:.95rem;color:var(--muted);font-weight:700;padding:10px 12px;border-bottom:2px solid var(--line);white-space:nowrap}
+.tbl td{padding:14px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl th.act{text-align:right}
+.tbl tr.editing td{background:var(--bg)}
+.name{font-weight:700;font-size:1.1rem}
+.rowbtns{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.rowbtns button{min-height:48px;min-width:88px;padding:8px 16px}
+.empty{color:var(--muted);padding:18px 12px}
+#exportMsg{margin:0 0 6px}
+@media (prefers-reduced-motion:no-preference){.tile .n{transition:transform .25s}.tile.bump .n{transform:scale(1.15)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>EstuaRio</h1>
+  <p class="sub">Registra los puntos de muestreo a lo largo del estuario. Cada punto se clasifica solo según su salinidad.</p>
+
+  <section class="summary" aria-label="Resumen por clase" id="summary"></section>
+
+  <section class="card chartcard" aria-labelledby="chartTitle">
+    <h2 id="chartTitle">Salinidad según la distancia a la desembocadura</h2>
+    <div class="chartbox"><canvas id="chart" role="img" aria-label="Gráfico de línea: salinidad en PSU según distancia en km"></canvas></div>
+    <p class="empty" id="chartFail" hidden>No se pudo cargar el gráfico. Revisa la conexión y recarga la página.</p>
+  </section>
+
+  <div class="main">
+    <section class="card formcard" aria-labelledby="formTitle">
+      <h2 id="formTitle">Agregar punto</h2>
+      <form id="form" novalidate autocomplete="off">
+        <div class="field">
+          <label for="nombre">Nombre del punto</label>
+          <input type="text" id="nombre" maxlength="60" placeholder="Ej.: Corral">
+        </div>
+        <div class="pair">
+          <div class="field">
+            <label for="km">Distancia (km)</label>
+            <input type="text" id="km" inputmode="decimal" placeholder="Ej.: 6">
+          </div>
+          <div class="field">
+            <label for="psu">Salinidad (PSU)</label>
+            <input type="text" id="psu" inputmode="decimal" placeholder="Ej.: 18,4">
+          </div>
+        </div>
+        <p class="live" id="live" role="status" aria-live="polite"></p>
+        <div class="actions">
+          <button type="submit" class="primary" id="submitBtn">Agregar punto</button>
+          <button type="button" id="cancelBtn" hidden>Cancelar edición</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="listTitle">
+      <div class="listhead">
+        <h2 id="listTitle">Puntos de muestreo</h2>
+        <div class="tools">
+          <button type="button" class="primary" id="exportBtn">Exportar datos a CSV</button>
+          <button type="button" class="danger" id="resetBtn">Restablecer datos de prueba</button>
+        </div>
+      </div>
+      <p class="live" id="exportMsg" role="status" aria-live="polite"></p>
+      <div class="tablewrap">
+        <table class="tbl">
+          <thead><tr><th>Punto</th><th class="num">Distancia (km)</th><th class="num">Salinidad (PSU)</th><th>Clasificación</th><th class="act">Acciones</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function(){
+  var KEY = 'ficha4-salinidad-estuario-v1';
+  var DEFAULTS = [
+    ['Corral',0,32.5],['Amargos',1,30.0],['Niebla',2,28.0],['Isla del Rey',6,18.4],['Punta de Lobos',10,9.7],
+    ['Las Mulatas',14,2.1],['Valdivia centro',18,0.4],['Torobayo',20,0.5],['Cabo Blanco',22,0.1]
+  ];
+  var CLASSES = {dulce:'Dulce', salobre:'Salobre', marina:'Marina'};
+  var points = [], editingId = null, pendingDelete = null, pendingReset = false;
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function seed(){ return DEFAULTS.map(function(d){ return {id:uid(), nombre:d[0], km:d[1], psu:d[2]}; }); }
+
+  function load(){
+    var raw = null;
+    try { raw = localStorage.getItem(KEY); } catch(e){}
+    if (raw === null) { points = seed(); save(); return; }
+    try {
+      var data = JSON.parse(raw);
+      points = Array.isArray(data) ? data.filter(function(p){
+        return p && typeof p.nombre === 'string' && isFinite(p.km) && isFinite(p.psu);
+      }) : seed();
+    } catch(e){ points = seed(); }
+  }
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(points)); } catch(e){} }
+
+  function classify(psu){ return psu < 0.5 ? 'dulce' : (psu <= 30 ? 'salobre' : 'marina'); }
+  function fmt(n, min){ return n.toLocaleString('es-CL', {minimumFractionDigits:min, maximumFractionDigits:2}); }
+  function parseNum(s){
+    var t = String(s).trim().replace(',', '.');
+    if (!/^\d*\.?\d+$|^\d+\.$/.test(t)) return NaN;
+    return parseFloat(t);
+  }
+  function el(tag, cls, text){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  var $ = function(id){ return document.getElementById(id); };
+  var form = $('form'), fNombre = $('nombre'), fKm = $('km'), fPsu = $('psu'), live = $('live');
+
+  function say(msg, type){ live.className = 'live ' + (type || ''); live.textContent = msg; }
+
+  function renderSummary(){
+    var counts = {dulce:0, salobre:0, marina:0};
+    points.forEach(function(p){ counts[classify(p.psu)]++; });
+    var box = $('summary'), prev = {};
+    Array.prototype.forEach.call(box.querySelectorAll('.tile'), function(t){ prev[t.dataset.k] = t.querySelector('.n').textContent; });
+    box.textContent = '';
+    [['dulce','Dulce (< 0,5 PSU)'],['salobre','Salobre (0,5 a 30 PSU)'],['marina','Marina (> 30 PSU)']].forEach(function(c){
+      var t = el('div', 'tile ' + c[0]); t.dataset.k = c[0];
+      t.appendChild(el('div', 'n', String(counts[c[0]])));
+      t.appendChild(el('div', 'l', c[1]));
+      if (prev[c[0]] !== undefined && prev[c[0]] !== String(counts[c[0]])) {
+        t.classList.add('bump'); setTimeout(function(){ t.classList.remove('bump'); }, 250);
+      }
+      box.appendChild(t);
+    });
+    var tot = el('div', 'tile'); tot.dataset.k = 'total';
+    tot.appendChild(el('div', 'n', String(points.length)));
+    tot.appendChild(el('div', 'l', 'Total de puntos'));
+    box.appendChild(tot);
+  }
+
+  function sorted(){ return points.slice().sort(function(a, b){ return a.km - b.km; }); }
+  var chart = null;
+  function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function buildDatasets(){
+    var s = sorted();
+    var data = s.map(function(p){ return {x:p.km, y:p.psu, nombre:p.nombre, cls:classify(p.psu)}; });
+    var min = s.length ? s[0].km : 0, max = s.length ? s[s.length-1].km : 1;
+    if (max <= min) max = min + 1;
+    return [
+      {label:'Salinidad', data:data, clip:false, borderColor:cssv('--accent'), backgroundColor:cssv('--accent'), borderWidth:3, tension:0,
+       pointRadius:8, pointHoverRadius:11, pointHitRadius:16, pointBorderWidth:2, pointBorderColor:cssv('--surface'),
+       pointBackgroundColor:data.map(function(d){ return cssv('--' + d.cls); }), order:1},
+      {label:'Límite dulce/salobre (0,5 PSU)', data:[{x:min,y:0.5},{x:max,y:0.5}], borderColor:cssv('--dulce'), borderDash:[7,5], borderWidth:2, pointRadius:0, pointHoverRadius:0, pointHitRadius:0, order:2},
+      {label:'Límite salobre/marina (30 PSU)', data:[{x:min,y:30},{x:max,y:30}], borderColor:cssv('--marina'), borderDash:[7,5], borderWidth:2, pointRadius:0, pointHoverRadius:0, pointHitRadius:0, order:3}
+    ];
+  }
+  function renderChart(){
+    if (!window.Chart) { $('chartFail').hidden = false; return; }
+    if (chart) { chart.data.datasets = buildDatasets(); chart.update(); return; }
+    var ink = cssv('--ink'), line = cssv('--line');
+    Chart.defaults.font.family = cssv('--font');
+    function axis(title){
+      return {title:{display:true, text:title, color:ink, font:{size:16, weight:'bold'}},
+              ticks:{color:ink, font:{size:14}}, grid:{color:line}, border:{color:line}};
+    }
+    var x = axis('Distancia (km)'); x.type = 'linear'; x.min = 0; x.grace = '3%';
+    var y = axis('Salinidad (PSU)'); y.beginAtZero = true; y.grace = '8%';
+    chart = new Chart($('chart'), {
+      type:'line',
+      data:{datasets:buildDatasets()},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        layout:{padding:{left:6, right:16, top:10}},
+        interaction:{mode:'nearest', intersect:true},
+        scales:{x:x, y:y},
+        plugins:{
+          legend:{position:'bottom', labels:{color:ink, font:{size:14}, usePointStyle:true, boxHeight:8, padding:14}},
+          tooltip:{
+            filter:function(i){ return i.datasetIndex === 0; },
+            padding:12, titleFont:{size:15}, bodyFont:{size:14},
+            callbacks:{
+              title:function(it){ return it[0].raw.nombre; },
+              label:function(c){ return ['Distancia: ' + fmt(c.raw.x, 0) + ' km', 'Salinidad: ' + fmt(c.raw.y, 1) + ' PSU', 'Clase: ' + CLASSES[c.raw.cls]]; }
+            }
+          }
+        }
+      }
+    });
+  }
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    var onTheme = function(){ if (chart) { chart.destroy(); chart = null; } renderChart(); };
+    if (mq.addEventListener) mq.addEventListener('change', onTheme);
+  }
+
+  function renderList(){
+    var tb = $('rows'); tb.textContent = '';
+    if (!points.length) {
+      var er = el('tr'), ed0 = el('td', 'empty', 'Aún no hay puntos. Agrega el primero con el formulario.'); ed0.colSpan = 5;
+      er.appendChild(ed0); tb.appendChild(er); return;
+    }
+    sorted().forEach(function(p){
+      var cls = classify(p.psu);
+      var tr = el('tr', p.id === editingId ? 'editing' : '');
+      tr.appendChild(el('td', 'name', p.nombre));
+      tr.appendChild(el('td', 'num', fmt(p.km, 0)));
+      tr.appendChild(el('td', 'num', fmt(p.psu, 1)));
+      var tc = el('td'); tc.appendChild(el('span', 'chip ' + cls, CLASSES[cls])); tr.appendChild(tc);
+
+      var ta = el('td'), btns = el('div', 'rowbtns');
+      if (pendingDelete === p.id) {
+        btns.appendChild(el('span', '', '¿Eliminar?'));
+        var yes = el('button', 'danger solid', 'Sí, eliminar'); yes.type = 'button';
+        yes.onclick = function(){ removePoint(p.id); };
+        var no = el('button', '', 'No'); no.type = 'button';
+        no.onclick = function(){ pendingDelete = null; renderList(); };
+        btns.appendChild(yes); btns.appendChild(no);
+      } else {
+        var ed = el('button', '', 'Editar'); ed.type = 'button';
+        ed.setAttribute('aria-label', 'Editar ' + p.nombre);
+        ed.onclick = function(){ startEdit(p.id); };
+        var del = el('button', 'danger', 'Eliminar'); del.type = 'button';
+        del.setAttribute('aria-label', 'Eliminar ' + p.nombre);
+        del.onclick = function(){ pendingDelete = p.id; renderList(); };
+        btns.appendChild(ed); btns.appendChild(del);
+      }
+      ta.appendChild(btns); tr.appendChild(ta); tb.appendChild(tr);
+    });
+  }
+
+  function renderAll(){ renderSummary(); renderChart(); renderList(); }
+
+  function resetForm(){
+    editingId = null; form.reset();
+    $('formTitle').textContent = 'Agregar punto';
+    $('submitBtn').textContent = 'Agregar punto';
+    $('cancelBtn').hidden = true;
+  }
+
+  function startEdit(id){
+    var p = points.filter(function(x){ return x.id === id; })[0]; if (!p) return;
+    editingId = id; pendingDelete = null;
+    fNombre.value = p.nombre;
+    fKm.value = String(p.km).replace('.', ',');
+    fPsu.value = String(p.psu).replace('.', ',');
+    $('formTitle').textContent = 'Editar punto';
+    $('submitBtn').textContent = 'Guardar cambios';
+    $('cancelBtn').hidden = false;
+    say('', ''); renderList();
+    fNombre.focus();
+    if (window.matchMedia('(orientation:portrait)').matches) form.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  function removePoint(id){
+    points = points.filter(function(p){ return p.id !== id; });
+    if (editingId === id) resetForm();
+    pendingDelete = null; save(); renderAll(); say('Punto eliminado.', 'ok');
+  }
+
+  form.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var nombre = fNombre.value.trim(), km = parseNum(fKm.value), psu = parseNum(fPsu.value);
+    if (!nombre) { say('Escribe el nombre del punto.', 'err'); fNombre.focus(); return; }
+    if (isNaN(km)) { say('La distancia debe ser un número en km, por ejemplo 6 o 6,5.', 'err'); fKm.focus(); return; }
+    if (isNaN(psu)) { say('La salinidad debe ser un número en PSU, por ejemplo 18,4.', 'err'); fPsu.focus(); return; }
+    var wasEditing = editingId !== null;
+    if (wasEditing) {
+      points = points.map(function(p){ return p.id === editingId ? {id:p.id, nombre:nombre, km:km, psu:psu} : p; });
+    } else {
+      points.push({id:uid(), nombre:nombre, km:km, psu:psu});
+    }
+    save(); resetForm(); renderAll();
+    var cls = classify(psu);
+    live.className = 'live ok';
+    live.textContent = (wasEditing ? 'Cambios guardados: ' : 'Punto agregado: ') + nombre + ' ';
+    live.appendChild(el('span', 'chip ' + cls, CLASSES[cls]));
+    fNombre.focus();
+  });
+
+  $('cancelBtn').addEventListener('click', function(){ resetForm(); say('', ''); renderList(); });
+
+  var resetBtn = $('resetBtn');
+  resetBtn.addEventListener('click', function(){
+    if (!pendingReset) {
+      pendingReset = true; resetBtn.textContent = 'Toca otra vez para confirmar'; resetBtn.classList.add('solid');
+      setTimeout(function(){ pendingReset = false; resetBtn.textContent = 'Restablecer datos de prueba'; resetBtn.classList.remove('solid'); }, 4000);
+      return;
+    }
+    pendingReset = false; resetBtn.textContent = 'Restablecer datos de prueba'; resetBtn.classList.remove('solid');
+    points = seed(); resetForm(); pendingDelete = null; save(); renderAll(); say('Datos de prueba restablecidos.', 'ok');
+  });
+
+  function csvCell(v){ var t = String(v); return /[;"\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; }
+  function csvNumber(v){ return String(v).replace('.', ','); }
+  function buildCsv(){
+    var rows = [['Punto', 'Salinidad (PSU)', 'Distancia (km)', 'Clasificación']];
+    sorted().forEach(function(p){
+      var nom = /^[=+\-@\t\r]/.test(p.nombre) ? "'" + p.nombre : p.nombre;
+      rows.push([nom, csvNumber(p.psu), csvNumber(p.km), CLASSES[classify(p.psu)]]);
+    });
+    return '\uFEFF' + rows.map(function(r){ return r.map(csvCell).join(';'); }).join('\r\n') + '\r\n';
+  }
+  function note(t, type){ var m = $('exportMsg'); m.className = 'live ' + (type || ''); m.textContent = t; }
+  $('exportBtn').addEventListener('click', async function(){
+    var csv = buildCsv(), name = 'estuario_datos.csv', dl = null;
+    try { if (window.claude && window.claude.use) dl = await window.claude.use('downloads'); } catch(e){ dl = null; }
+    if (dl) {
+      try { await dl.save({filename:name, data:csv}); note('CSV exportado con ' + points.length + ' puntos.', 'ok'); }
+      catch(e){ if (e && e.code === 'declined') note('Descarga cancelada.', ''); else note('No se pudo guardar el CSV. Inténtalo otra vez.', 'err'); }
+      return;
+    }
+    try {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+      a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+      note('CSV generado con ' + points.length + ' puntos.', 'ok');
+    } catch(e){ note('Este navegador no permite descargar el archivo.', 'err'); }
+  });
+
+  load(); renderAll();
+})();
+</script>
+</body>
+</html>
